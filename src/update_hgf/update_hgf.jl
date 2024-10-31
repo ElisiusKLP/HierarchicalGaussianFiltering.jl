@@ -21,6 +21,7 @@ function update_hgf!(
     };
     stepsize::Real = 1,
 )
+
     ### Update node predictions from last timestep ###
     #For each node (in the opposite update order)
     for node in reverse(hgf.ordered_nodes.all_state_nodes)

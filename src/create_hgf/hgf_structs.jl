@@ -98,6 +98,8 @@ Base.@kwdef mutable struct HGF
     parameter_groups::Dict = Dict()
     save_history::Bool = true
     timesteps::Vector{Real} = [0]
+    nodes_by_family::Dict{String, Vector{AbstractNode}} = Dict{String, Vector{AbstractNode}}()
+    edges_by_family::Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}} = Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}}()
 end
 
 ##################################
@@ -215,6 +217,7 @@ Base.@kwdef mutable struct ContinuousStateNode <: AbstractContinuousStateNode
     states::ContinuousStateNodeState = ContinuousStateNodeState()
     history::ContinuousStateNodeHistory = ContinuousStateNodeHistory()
     update_type::HGFUpdateType = ClassicUpdate()
+    families::Set{String} = Set()
 end
 
 
@@ -270,6 +273,7 @@ Base.@kwdef mutable struct ContinuousInputNode <: AbstractContinuousInputNode
     parameters::ContinuousInputNodeParameters = ContinuousInputNodeParameters()
     states::ContinuousInputNodeState = ContinuousInputNodeState()
     history::ContinuousInputNodeHistory = ContinuousInputNodeHistory()
+    families::Set{String} = Set()
 end
 
 ###################################
@@ -325,6 +329,7 @@ Base.@kwdef mutable struct BinaryStateNode <: AbstractBinaryStateNode
     states::BinaryStateNodeState = BinaryStateNodeState()
     history::BinaryStateNodeHistory = BinaryStateNodeHistory()
     update_type::HGFUpdateType = ClassicUpdate()
+    families::Set{String} = Set()
 end
 
 
@@ -365,6 +370,7 @@ Base.@kwdef mutable struct BinaryInputNode <: AbstractBinaryInputNode
     parameters::BinaryInputNodeParameters = BinaryInputNodeParameters()
     states::BinaryInputNodeState = BinaryInputNodeState()
     history::BinaryInputNodeHistory = BinaryInputNodeHistory()
+    families::Set{String} = Set()
 end
 
 
@@ -417,6 +423,7 @@ Base.@kwdef mutable struct CategoricalStateNode <: AbstractCategoricalStateNode
     states::CategoricalStateNodeState = CategoricalStateNodeState()
     history::CategoricalStateNodeHistory = CategoricalStateNodeHistory()
     update_type::HGFUpdateType = ClassicUpdate()
+    families::Set{String} = Set()
 end
 
 
@@ -455,4 +462,5 @@ Base.@kwdef mutable struct CategoricalInputNode <: AbstractCategoricalInputNode
     parameters::CategoricalInputNodeParameters = CategoricalInputNodeParameters()
     states::CategoricalInputNodeState = CategoricalInputNodeState()
     history::CategoricalInputNodeHistory = CategoricalInputNodeHistory()
+    families::Set{String} = Set()
 end

@@ -76,6 +76,7 @@ function init_hgf(;
     nodes::Vector{<:AbstractNodeInfo},
     edges::Dict{Tuple{String,String},<:CouplingType},
     node_defaults::NodeDefaults = NodeDefaults(),
+    families::Dict{String, Tuple{Vararg{String}}} = Dict(),  # Family name => Tuple of node names, e.g. "default" => ("x","y")
     parameter_groups::Vector{ParameterGroup} = Vector{ParameterGroup}(),
     update_order::Union{Nothing,Vector{String}} = nothing,
     verbose::Bool = true,
@@ -185,7 +186,85 @@ function init_hgf(;
         end
     end
 
-    #initializing shared parameters
+    ### Assign Families to Nodes ###
+    # Initialize a mapping from node names to their families
+    node_families = Dict{String, Set{String}}()
+
+    # Iterate over the families dictionary provided to init_hgf
+    for (family_name, node_names) in families
+        for node_name in node_names
+            # Check if the node exists
+            if !haskey(all_nodes_dict, node_name)
+                error("Node '$node_name' specified in family '$family_name' does not exist.")
+            end
+
+            # Access the node
+            node = all_nodes_dict[node_name]
+
+            # Initialize the node's families set if not already done
+            if !haskey(node_families, node_name)
+                node_families[node_name] = Set{String}()
+            end
+
+            # Add the family to the node's families set
+            push!(node_families[node_name], family_name)
+        end
+    end
+
+    # Assign the families to each node
+    for (node_name, family_set) in node_families
+        node = all_nodes_dict[node_name]
+        node.families = family_set
+    end
+
+    # Handle nodes not specified in any family
+    for node in all_nodes_dict.values()
+        if isempty(node.families)
+            # Decide on the desired behavior; here, assign to 'default' family
+            node.families = Set(["default"])
+        end
+    end
+
+    ### Group Nodes by Families ###
+    nodes_by_family = Dict{String, Vector{AbstractNode}}()
+
+    for node in all_nodes_dict.values()
+        for family in node.families
+            if !haskey(nodes_by_family, family)
+                nodes_by_family[family] = Vector{AbstractNode}()
+            end
+            push!(nodes_by_family[family], node)
+        end
+    end
+
+    ### Group Edges by Families ###
+    edges_by_family = Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}}()
+
+    for ((child_name, parent_name), coupling_type) in edges
+        child_node = all_nodes_dict[child_name]
+        parent_node = all_nodes_dict[parent_name]
+
+        # Find common families between child and parent nodes
+        common_families = intersect(child_node.families, parent_node.families)
+
+        if isempty(common_families)
+            # Decide how to handle edges between nodes with no common families
+            # For this implementation, we'll include the edge in all families of the child node
+            edge_families = child_node.families
+        else
+            edge_families = common_families
+        end
+
+        # Assign edge to families
+        for family in edge_families
+            if !haskey(edges_by_family, family)
+                edges_by_family[family] = Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}()
+            end
+            push!(edges_by_family[family], (child_node, parent_node, coupling_type))
+        end
+    end
+
+    ###initializing shared parameters###
     parameter_groups_dict = Dict()
 
     #Go through each specified shared parameter
@@ -207,6 +286,8 @@ function init_hgf(;
         parameter_groups_dict,
         save_history,
         [0],
+        nodes_by_family,
+        edges_by_family,
     )
 
     ### Check that the HGF has been specified properly ###
