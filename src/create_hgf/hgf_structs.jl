@@ -17,6 +17,8 @@ abstract type AbstractBinaryInputNode <: AbstractInputNode end
 abstract type AbstractCategoricalStateNode <: AbstractStateNode end
 abstract type AbstractCategoricalInputNode <: AbstractInputNode end
 
+abstract type AbstractModelComparisonNode <: AbstractInputNode end
+
 #Abstract type for node information
 abstract type AbstractNodeInfo end
 abstract type AbstractInputNodeInfo <: AbstractNodeInfo end
@@ -65,7 +67,10 @@ Base.@kwdef mutable struct ProbabilityCoupling <: ValueCoupling
     strength::Union{Nothing,Real} = nothing
 end
 Base.@kwdef mutable struct CategoryCoupling <: ValueCoupling end
-Base.@kwdef mutable struct ObservationCoupling <: ValueCoupling end
+
+Base.@kwdef mutable struct ObservationCoupling <: ValueCoupling
+    strength::Union{Nothing,Real} = nothing # added by Elisius
+end
 
 #Concrete precision coupling types
 Base.@kwdef mutable struct VolatilityCoupling <: PrecisionCoupling
@@ -98,8 +103,8 @@ Base.@kwdef mutable struct HGF
     parameter_groups::Dict = Dict()
     save_history::Bool = true
     timesteps::Vector{Real} = [0]
-    nodes_by_family::Dict{String, Vector{AbstractNode}} = Dict{String, Vector{AbstractNode}}()
-    edges_by_family::Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}} = Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}}()
+    #nodes_by_family::Dict{String, Vector{AbstractNode}} = Dict{String, Vector{AbstractNode}}()
+    #edges_by_family::Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}} = Dict{String, Vector{Tuple{AbstractNode, AbstractNode, CouplingType}}}()
 end
 
 ##################################
@@ -148,6 +153,9 @@ Base.@kwdef mutable struct CategoricalInput <: AbstractInputNodeInfo
     name::String
 end
 
+Base.@kwdef mutable struct ModelComparisonInput <: AbstractInputNodeInfo
+    name::String
+end
 
 
 #######################################
@@ -463,4 +471,45 @@ Base.@kwdef mutable struct CategoricalInputNode <: AbstractCategoricalInputNode
     states::CategoricalInputNodeState = CategoricalInputNodeState()
     history::CategoricalInputNodeHistory = CategoricalInputNodeHistory()
     families::Set{String} = Set()
+end
+
+###########################################
+######## Model Comparison Node ############
+###########################################
+
+# Define the edges for the model comparison node
+Base.@kwdef mutable struct ModelComparisonNodeEdges
+    # No parents or children in the traditional sense
+    # It collects information directly from the HGF state
+   
+end
+
+# Define the parameters for the model comparison node
+Base.@kwdef mutable struct ModelComparisonNodeParameters
+    # Any parameters needed for the model comparison
+    # For now, we don't need any specific parameters
+end
+
+# Define the states for the model comparison node
+Base.@kwdef mutable struct ModelComparisonNodeState
+    total_surprise::Dict{String, Real} = Dict()  # Total surprise per model family
+    evidence::Dict{String, Real} = Dict()        # Evidence per model family
+    probabilities::Dict{String, Real} = Dict()   # Softmax probabilities per model family
+end
+
+# Define the history for the model comparison node
+Base.@kwdef mutable struct ModelComparisonNodeHistory
+    total_surprise::Vector{Dict{String, Real}} = []    # History of total surprises
+    evidence::Vector{Dict{String, Real}} = []          # History of evidences
+    probabilities::Vector{Dict{String, Real}} = []     # History of probabilities
+end
+
+# Define the ModelComparisonNode type
+Base.@kwdef mutable struct ModelComparisonNode <: AbstractModelComparisonNode
+    name::String
+    edges::ModelComparisonNodeEdges = ModelComparisonNodeEdges() # TODO no edges per say, currently
+    parameters::ModelComparisonNodeParameters = ModelComparisonNodeParameters()
+    states::ModelComparisonNodeState = ModelComparisonNodeState()
+    history::ModelComparisonNodeHistory = ModelComparisonNodeHistory()
+    # No families field needed here
 end

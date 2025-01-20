@@ -47,7 +47,6 @@ function get_surprise(agent::Agent)
     return surprise
 end
 
-
 ### Single node functions ###
 @doc raw"""
     get_surprise(node::ContinuousInputNode)
@@ -138,3 +137,51 @@ function get_surprise(node::CategoricalInputNode)
 
     return surprise
 end
+
+
+# get surprise of a specific family
+function get_surprise_by_family(node::AbstractInputNode, family_name::String)
+
+    # If no input was provided, return no surprise
+    if ismissing(node.states.input_value)
+        return 0
+    end
+
+    # collect family input Nodes
+    # Collect parents belonging to the specified family
+    relevant_parents = filter(
+        parent -> family_name in parent.families,
+        node.edges.observation_parents,
+    )
+    for parent in relevant_parents
+        print("relevant_parents for input_node, ", node.name, "relevant_parents, ", parent.name)
+    end
+
+    # If no parents belong to the specified family, return no surprise
+    if isempty(relevant_parents)
+        return 0
+    end
+
+    # Sum predictions from relevant parents
+    parents_prediction_mean = sum(parent.states.prediction_mean for parent in relevant_parents)
+
+    # Calculate surprise based on node type
+    if node isa ContinuousInputNode
+        return -log(
+            pdf(
+                Normal(parents_prediction_mean, node.states.prediction_precision), node.states.input_value))
+    elseif node isa BinaryInputNode
+        if node.states.input_value == 0
+            return -log(1 - parents_prediction_mean)
+        elseif node.states.input_value == 1
+            return -log(parents_prediction_mean)
+        end
+    elseif node isa CategoricalInputNode
+        # Assuming the first parent is relevant for categorical nodes
+        parent = relevant_parents[1]
+        return sum(-log.(exp.(log.(parent.states.prediction) .* parent.states.posterior)))
+    else
+        error("Unsupported node type for get_surprise_by_family.")
+    end
+end
+

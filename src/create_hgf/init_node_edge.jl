@@ -35,6 +35,9 @@ function init_node(node_info::CategoricalInput)
     CategoricalInputNode(name = node_info.name)
 end
 
+function init_node(node_info::ModelComparisonInput)
+    ModelComparisonNode(name = node_info.name)
+end
 
 ### Function for initializing an edge ###
 function init_edge!(

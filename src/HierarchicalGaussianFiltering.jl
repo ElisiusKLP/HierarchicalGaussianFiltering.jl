@@ -14,7 +14,7 @@ export ParameterGroup
 export EnhancedUpdate, ClassicUpdate
 export NodeDefaults
 export ContinuousState,
-    ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput
+    ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput, ModelComparisonInput
 export DriftCoupling,
     ObservationCoupling,
     CategoryCoupling,
@@ -55,6 +55,7 @@ include("update_hgf/node_updates/binary_input_node.jl")
 include("update_hgf/node_updates/binary_state_node.jl")
 include("update_hgf/node_updates/categorical_input_node.jl")
 include("update_hgf/node_updates/categorical_state_node.jl")
+include("update_hgf/node_updates/model_comparison_node.jl")
 
 #Functions for creating HGFs
 include("create_hgf/check_hgf.jl")

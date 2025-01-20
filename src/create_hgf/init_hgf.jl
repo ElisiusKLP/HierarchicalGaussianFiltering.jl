@@ -76,7 +76,7 @@ function init_hgf(;
     nodes::Vector{<:AbstractNodeInfo},
     edges::Dict{Tuple{String,String},<:CouplingType},
     node_defaults::NodeDefaults = NodeDefaults(),
-    families::Dict{String, Tuple{Vararg{String}}} = Dict(),  # Family name => Tuple of node names, e.g. "default" => ("x","y")
+    families::Dict{String, Vector{String}} = Dict(),  # Family name => Tuple of node names, e.g. "default" => ("x","y")
     parameter_groups::Vector{ParameterGroup} = Vector{ParameterGroup}(),
     update_order::Union{Nothing,Vector{String}} = nothing,
     verbose::Bool = true,
@@ -186,6 +186,7 @@ function init_hgf(;
         end
     end
 
+    ###### MODIFICATION######
     ### Assign Families to Nodes ###
     # Initialize a mapping from node names to their families
     node_families = Dict{String, Set{String}}()
@@ -217,18 +218,25 @@ function init_hgf(;
         node.families = family_set
     end
 
+    print(all_nodes_dict)
     # Handle nodes not specified in any family
-    for node in all_nodes_dict.values()
-        if isempty(node.families)
-            # Decide on the desired behavior; here, assign to 'default' family
-            node.families = Set(["default"])
-        end
+    for node in values(all_nodes_dict)
+        if hasfield(typeof(node), :families)  # Check if the field `families` exists in the node
+            println("Type of node.families:", typeof(node.families))
+            println("Contents of node.families:", node.families)
+            if isempty(node.families)
+                # Decide on the desired behavior; here, assign to 'default' family
+                node.families = Set(["default"])
+            end
+        else
+            println("This node doesn't have a family, node name", node.name)
     end
 
+    """ #### TEMPORARY commented out, i don't think i need this right now ####
     ### Group Nodes by Families ###
     nodes_by_family = Dict{String, Vector{AbstractNode}}()
 
-    for node in all_nodes_dict.values()
+    for node in values(all_nodes_dict)
         for family in node.families
             if !haskey(nodes_by_family, family)
                 nodes_by_family[family] = Vector{AbstractNode}()
@@ -263,6 +271,10 @@ function init_hgf(;
             push!(edges_by_family[family], (child_node, parent_node, coupling_type))
         end
     end
+    """
+
+
+    ###### MODIFICATION end ######
 
     ###initializing shared parameters###
     parameter_groups_dict = Dict()
@@ -286,8 +298,8 @@ function init_hgf(;
         parameter_groups_dict,
         save_history,
         [0],
-        nodes_by_family,
-        edges_by_family,
+        #nodes_by_family, #!temp commented
+        #edges_by_family, #!temp commented
     )
 
     ### Check that the HGF has been specified properly ###
@@ -330,4 +342,5 @@ function init_hgf(;
     reset!(hgf)
 
     return hgf
+end
 end
