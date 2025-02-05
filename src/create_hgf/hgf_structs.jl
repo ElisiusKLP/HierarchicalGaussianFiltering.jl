@@ -68,8 +68,11 @@ Base.@kwdef mutable struct ProbabilityCoupling <: ValueCoupling
 end
 Base.@kwdef mutable struct CategoryCoupling <: ValueCoupling end
 
-Base.@kwdef mutable struct ObservationCoupling <: ValueCoupling
-    strength::Union{Nothing,Real} = nothing # added by Elisius
+Base.@kwdef mutable struct ObservationCoupling <: ValueCoupling end
+
+# MODIFICATION by Elisius
+Base.@kwdef mutable struct WeightedObservationCoupling <: ValueCoupling
+    strength::Union{Nothing,Real} = nothing 
 end
 
 #Concrete precision coupling types

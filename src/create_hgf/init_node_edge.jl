@@ -56,6 +56,10 @@ function init_edge!(
         parents_field = :observation_parents
         children_field = :observation_children
 
+    elseif coupling_type isa WeightedObservationCoupling
+        parents_field = :observation_parents
+        children_field = :observation_children
+
     elseif coupling_type isa CategoryCoupling
         parents_field = :category_parents
         children_field = :category_children

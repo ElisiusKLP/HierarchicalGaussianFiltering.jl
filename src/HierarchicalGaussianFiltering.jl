@@ -17,6 +17,7 @@ export ContinuousState,
     ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput, ModelComparisonInput #MOD
 export DriftCoupling,
     ObservationCoupling,
+    WeightedObservationCoupling, #MODIFICATION
     CategoryCoupling,
     ProbabilityCoupling,
     VolatilityCoupling,

@@ -23,8 +23,6 @@ function update_hgf!(
     dynamic_coupling = true, # Default dynamic_coupling to ON
 )
 
-
-
     ### Update node predictions from last timestep ###
     #For each node (in the opposite update order)
     for node in reverse(hgf.ordered_nodes.all_state_nodes)
@@ -38,6 +36,8 @@ function update_hgf!(
         update_node_prediction!(node, stepsize)
     end
 
+    ### Supply inputs to input nodes ###
+    enter_node_inputs!(hgf, inputs)
 
     """ MODIFICATION"""
     ### Model Comparison Node ###
@@ -57,9 +57,6 @@ function update_hgf!(
     println("--- Succesfully updated all model comparison nodes ---")
 
     """MODIFICATION END"""
-
-    ### Supply inputs to input nodes ###
-    enter_node_inputs!(hgf, inputs)
 
     ### Update input node value prediction errors ###
     #For each input node, in the specified update order

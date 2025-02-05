@@ -175,9 +175,17 @@ function calculate_posterior_precision(
     end
 
     #Add update terms from observation children
-    for child in node.edges.observation_children
+    #=for child in node.edges.observation_children
         posterior_precision +=
             calculate_posterior_precision_increment(node, child, ObservationCoupling())
+    end=#
+    # I just commented this out because it was a bit much changing the logic around the observation children
+    # defined in init_edges because suddenly i have to create different children types based on the weighted or not
+    # it might easiest to just create a sort of switch mechanism temporarily for whether we are using the omdel comparison version or not
+
+    for child in node.edges.observation_children
+        posterior_precision +=
+            calculate_posterior_precision_increment(node, child, WeightedObservationCoupling())
     end
 
     #Add update terms from probability children
@@ -259,6 +267,24 @@ function calculate_posterior_precision_increment(
         return 0
     else
         return child.states.prediction_precision
+    end
+end
+
+
+## Weighted Observation coupling ##
+function calculate_posterior_precision_increment(
+    node::ContinuousStateNode,
+    child::ContinuousInputNode,
+    coupling_type::WeightedObservationCoupling,
+)
+
+    #If missing input
+    if ismissing(child.states.input_value)
+        #No increment
+        return 0
+    else
+        return child.parameters.coupling_strengths[node.name] *
+                child.states.prediction_precision
     end
 end
 
@@ -466,6 +492,23 @@ function calculate_posterior_mean_increment(
         return 0
     else
         return (child.states.prediction_precision / node.states.prediction_precision) *
+               child.states.value_prediction_error
+    end
+end
+
+## Weighted observation coupling ##
+function calculate_posterior_mean_increment(
+    node::ContinuousStateNode,
+    child::ContinuousInputNode,
+    CouplingType::WeightedObservationCoupling,
+    update_type::EnhancedUpdate
+)
+    #If the child has a missing input
+    if ismissing(child.states.input_value)
+        return 0
+    else
+        return child.parameters.coupling_strengths[node.name] *
+               (child.states.prediction_precision / node.states.prediction_precision) *
                child.states.value_prediction_error
     end
 end

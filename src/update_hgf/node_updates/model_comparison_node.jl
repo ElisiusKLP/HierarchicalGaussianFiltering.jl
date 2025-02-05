@@ -96,7 +96,7 @@ function calculate_softmax_probabilities!(node::ModelComparisonNode)
     println("Updated probabilities: $(node.states.probabilities)")
 end
 
-function softmax(x::Vector{Real}, β::Real = 3.0)
+function softmax(x::Vector{Real}, β::Real = 3)
     println("=== Calculating Softmax with precision β = $β ===")
     # For numerical stability, subtract the maximum, then scale
     scaled_x = β .* (x .- maximum(x))
@@ -166,6 +166,9 @@ function adjust_all_coupling_strengths!(hgf::HGF, node::ModelComparisonNode, ste
                         # set the child nodes parameter
                         child_node.parameters.coupling_strengths[parent_node.name] = updated_strength
                         println("      Updated coupling strength for parent $(parent_node.name): $updated_strength")
+
+                        println("Updated coupling_strengths for $(child_node.name): ",
+                                    child_node.parameters.coupling_strengths)
                     end
                 end
             else
