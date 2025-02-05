@@ -14,7 +14,7 @@ export ParameterGroup
 export EnhancedUpdate, ClassicUpdate
 export NodeDefaults
 export ContinuousState,
-    ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput, ModelComparisonInput
+    ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput, ModelComparisonInput #MOD
 export DriftCoupling,
     ObservationCoupling,
     CategoryCoupling,

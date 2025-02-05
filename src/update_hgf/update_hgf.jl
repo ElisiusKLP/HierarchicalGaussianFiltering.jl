@@ -20,7 +20,10 @@ function update_hgf!(
         Dict{String,<:Union{Real,Missing}},
     };
     stepsize::Real = 1,
+    dynamic_coupling = true, # Default dynamic_coupling to ON
 )
+
+
 
     ### Update node predictions from last timestep ###
     #For each node (in the opposite update order)
@@ -35,6 +38,26 @@ function update_hgf!(
         update_node_prediction!(node, stepsize)
     end
 
+
+    """ MODIFICATION"""
+    ### Model Comparison Node ###
+    # For each model comparison node we collect the combined suprise for each family
+    # by running each input node through a surprise collection
+
+    # Update model comparison nodes.
+    for node in values(hgf.input_nodes)
+        if node isa Main.HierarchicalGaussianFiltering.ModelComparisonNode
+            update_model_comparison_node!(hgf, node, stepsize)
+            if dynamic_coupling
+                adjust_all_coupling_strengths!(hgf, node, stepsize)
+            end
+        end
+    end
+
+    println("--- Succesfully updated all model comparison nodes ---")
+
+    """MODIFICATION END"""
+
     ### Supply inputs to input nodes ###
     enter_node_inputs!(hgf, inputs)
 
@@ -44,38 +67,6 @@ function update_hgf!(
         #Update its value prediction error
         update_node_value_prediction_error!(node)
     end
-
-    """ MODIFICATION"""
-    ### Model Comparison Node ###
-    # For each model comparison node we collect the combined suprise for each family
-    # by running each input node through a surprise collection
-    
-    # Check if a modelcomparison node exists
-    model_comparison_nodes = []
-    #check in input nodes because comparison node is an input node
-    for node in values(hgf.input_nodes)
-        if node isa Main.HierarchicalGaussianFiltering.ModelComparisonNode
-            push!(model_comparison_nodes, node.name)
-        end
-    end
-    
-    # Collect and process ModelComparisonNodes
-    if !isempty(model_comparison_nodes)
-        for node_name in model_comparison_nodes
-            # Retrieve the ModelComparisonNode
-            model_comparison_node = hgf.all_nodes[node_name]
-            
-            # Update the ModelComparisonNode
-            update_model_comparison_node!(hgf, model_comparison_node, stepsize)
-            
-            # Adjust all coupling strengths based on the model comparison
-            adjust_all_coupling_strengths!(hgf, model_comparison_node, stepsize)
-        end
-    end
-
-    println("--- Succesfully updated all model comparison nodes ---")
-
-    """MODIFICATION END"""
 
     ### Update input node value parent posteriors ###
     #For each node that is a value parent of an input node
@@ -123,7 +114,7 @@ function update_hgf!(
             end
         end
 
-        # add model comparison node history
+        # add model comparison node history (not an ordered node)
         for node in values(hgf.input_nodes)
             if node isa Main.HierarchicalGaussianFiltering.ModelComparisonNode
                 

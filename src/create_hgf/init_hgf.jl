@@ -186,7 +186,8 @@ function init_hgf(;
         end
     end
 
-    ###### MODIFICATION######
+    """ ##### MODIFICATION ##### """
+
     ### Assign Families to Nodes ###
     # Initialize a mapping from node names to their families
     node_families = Dict{String, Set{String}}()
@@ -274,7 +275,7 @@ function init_hgf(;
     """
 
 
-    ###### MODIFICATION end ######
+    """##### MODIFICATION end #####"""
 
     ###initializing shared parameters###
     parameter_groups_dict = Dict()

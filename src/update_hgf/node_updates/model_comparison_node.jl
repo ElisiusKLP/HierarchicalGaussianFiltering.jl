@@ -1,16 +1,29 @@
-### ModelComparisonNode UPDATE ###
+#######################################
+# Model Comparison Node Functions #####
+#######################################
 
 # UPDATE model comparison node
+"""
+    update_model_comparison_node!(hgf::HGF, node::ModelComparisonNode, stepsize::Real)
+
+Updates the model comparison node by aggregating surprise from input nodes,
+computing evidence, and converting it to probabilities using a softmax.
+"""
 function update_model_comparison_node!(hgf::HGF, node::ModelComparisonNode, stepsize::Real)
-    println("=== Updating ModelComparisonNode ===")
-    
+    println("Updating ModelComparisonNode: $(node.name)")
     calculate_total_surprise_per_family!(node, hgf)
     calculate_evidence_per_family!(node)
-    calculate_softmax_proabilities!(node)
-    
+    calculate_softmax_probabilities!(node)
     println("Updated probabilities: $(node.states.probabilities)")
 end
 
+
+"""
+    calculate_total_surprise_per_family!(node::ModelComparisonNode, hgf::HGF)
+
+Aggregates the surprise from each input node (except model comparison nodes)
+for every defined family.
+"""
 function calculate_total_surprise_per_family!(node::ModelComparisonNode, hgf::HGF)
     println("=== Calculating Total Surprise Per Family ===")
     # reset the surprise
@@ -45,6 +58,11 @@ function calculate_total_surprise_per_family!(node::ModelComparisonNode, hgf::HG
     println("Total surprise: $(node.states.total_surprise)")
 end
 
+"""
+    calculate_evidence_per_family!(node::ModelComparisonNode)
+
+Transforms the aggregated surprise into evidence (by negation) for each family.
+"""
 function calculate_evidence_per_family!(node::ModelComparisonNode)
     println("=== Calculating Evidence Per Family ===")
     # init empty dictionary
@@ -58,7 +76,13 @@ function calculate_evidence_per_family!(node::ModelComparisonNode)
     println("Evidence: $(node.states.evidence)")
 end
 
-function calculate_softmax_proabilities!(node::ModelComparisonNode)
+"""
+    calculate_softmax_probabilities!(node::ModelComparisonNode)
+
+Converts the evidence for each family into a probability distribution using softmax.
+"""
+
+function calculate_softmax_probabilities!(node::ModelComparisonNode)
     println("=== Calculating Softmax Probabilities ===")
     evidences = collect(values(node.states.evidence))
     families = collect(keys(node.states.evidence))
@@ -72,14 +96,19 @@ function calculate_softmax_proabilities!(node::ModelComparisonNode)
     println("Updated probabilities: $(node.states.probabilities)")
 end
 
-### Custom softmax function
-function softmax(x::Vector{Real})
-    println("=== Calculating Softmax ===")
-    exp_x = exp.(x .- maximum(x))  # For numerical stability
+function softmax(x::Vector{Real}, β::Real = 3.0)
+    println("=== Calculating Softmax with precision β = $β ===")
+    # For numerical stability, subtract the maximum, then scale
+    scaled_x = β .* (x .- maximum(x))
+    println("Scaled input: $scaled_x")
+    
+    exp_x = exp.(scaled_x)
     println("Exponentials: $exp_x")
-    probs = exp_x / sum(exp_x)
+    
+    probs = exp_x ./ sum(exp_x)
     println("Softmax output: $probs")
-    @assert isapprox(sum(probs), 1.0; atol=1e-6) "Softmax probabilities do not sum to 1"
+    
+    @assert isapprox(sum(probs), 1.0; atol=1e-6) "Softmax probabilities do not sum to ~1"
     return probs
 end
 
@@ -91,7 +120,7 @@ function adjust_all_coupling_strengths!(hgf::HGF, node::ModelComparisonNode, ste
     mc_probabilities = node.states.probabilities
     println("Model comparison probabilities: $mc_probabilities")
 
-    # Organize nodes family-wise
+    # Organize all non-model-comparison nodes by family.
     family_nodes = Dict{String, Vector{AbstractNode}}()
     for current_node in values(hgf.all_nodes)
         if !(current_node isa AbstractModelComparisonNode)
