@@ -125,6 +125,23 @@ function check_hgf(node::CategoricalStateNode)
     return nothing
 end
 
+function check_hgf(node::NoisyCategoricalStateNode) #-------------------- NEW-NOISY --------------------
+
+    #Extract node name for error messages
+    node_name = node.name
+
+    #Require exactly one value child
+    if length(node.edges.observation_children) != 1
+        throw(
+            ArgumentError(
+                "The noisy categorical state node $node_name does not have exactly one observation child. This is not supported.",
+            ),
+        )
+    end
+
+    return nothing
+end
+
 ### Input Nodes ###
 function check_hgf(node::ContinuousInputNode)
 
@@ -170,6 +187,22 @@ function check_hgf(node::CategoricalInputNode)
         throw(
             ArgumentError(
                 "The categorical input node $node_name does not have exactly one observation parent. This is not supported.",
+            ),
+        )
+    end
+
+end
+
+function check_hgf(node::NoisyCategoricalInputNode) #-------------------- NEW-NOISY --------------------
+
+    #Extract node name for error messages
+    node_name = node.name
+
+    #Require exactly one value parent
+    if length(node.edges.observation_parents) != 1
+        throw(
+            ArgumentError(
+                "The noisy categorical input node $node_name does not have exactly one observation parent. This is not supported.",
             ),
         )
     end

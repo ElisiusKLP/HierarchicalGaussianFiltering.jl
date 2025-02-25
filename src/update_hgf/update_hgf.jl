@@ -148,6 +148,9 @@ function enter_node_inputs!(hgf::HGF, inputs::Vector{<:Union{Real,Missing}})
         #Just input that into the first input node
         enter_node_inputs!(hgf, first(inputs))
 
+    elseif typeof(first(hgf.input_nodes)[2]) == NoisyCategoricalInputNode #----------------- NEW-NOISY -----------------
+        update_node_input!(first(hgf.input_nodes)[2], inputs)
+
     else
 
         #For each input node and its corresponding input
@@ -184,3 +187,10 @@ function update_node_input!(node::AbstractInputNode, input::Union{Real,Missing})
     return nothing
 end
 
+function update_node_input!(node::AbstractInputNode, input::Vector{T} where T <: Real) #----------------- NEW-NOISY -----------------
+
+    #Receive input
+    node.states.input_value = input
+
+    return nothing
+end

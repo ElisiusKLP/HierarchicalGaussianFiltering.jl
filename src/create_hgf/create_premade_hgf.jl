@@ -18,6 +18,7 @@ function premade_hgf(model_name::String, config::Dict = Dict(); verbose = true)
         "JGET" => premade_JGET,                             #The JGET model
         "categorical_3level" => premade_categorical_3level, #The standard categorical input 3 level HGF
         "categorical_state_transitions" => premade_categorical_state_transitions,   #Categorical 3 level HGF for learning state transitions
+        "noisy_categorical" => premade_noisy_categorical_3level,    #The standard noisy categorical input 3 level HGF ---------------- NEW-NOISY ----------------
     )
 
     #Check that the specified model is in the list of keys

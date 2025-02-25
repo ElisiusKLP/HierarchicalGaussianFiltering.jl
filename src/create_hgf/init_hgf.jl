@@ -310,7 +310,7 @@ function init_hgf(;
     #For each state node
     for node in hgf.ordered_nodes.all_state_nodes
         #If it is a categorical state node
-        if node isa CategoricalStateNode
+        if node isa CategoricalStateNode || node isa NoisyCategoricalStateNode #----------------- NEW-NOISY ----------------
 
             #Make vector with ordered category parents
             for parent in node.edges.category_parents

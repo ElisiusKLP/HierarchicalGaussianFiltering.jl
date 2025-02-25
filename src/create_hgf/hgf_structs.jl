@@ -16,8 +16,10 @@ abstract type AbstractBinaryStateNode <: AbstractStateNode end
 abstract type AbstractBinaryInputNode <: AbstractInputNode end
 abstract type AbstractCategoricalStateNode <: AbstractStateNode end
 abstract type AbstractCategoricalInputNode <: AbstractInputNode end
+abstract type AbstractNoisyCategoricalStateNode <: AbstractStateNode end #-------------------- NEW-NOISY --------------------
+abstract type AbstractNoisyCategoricalInputNode <: AbstractInputNode end #-------------------- NEW-NOISY --------------------
 
-abstract type AbstractModelComparisonNode <: AbstractInputNode end
+abstract type AbstractModelComparisonNode <: AbstractInputNode end #-------------------- META-HGF --------------------
 
 #Abstract type for node information
 abstract type AbstractNodeInfo end
@@ -156,7 +158,16 @@ Base.@kwdef mutable struct CategoricalInput <: AbstractInputNodeInfo
     name::String
 end
 
-Base.@kwdef mutable struct ModelComparisonInput <: AbstractInputNodeInfo
+Base.@kwdef mutable struct NoisyCategoricalState <: AbstractStateNodeInfo #-------------------- NEW-NOISY --------------------
+    name::String
+end
+
+Base.@kwdef mutable struct NoisyCategoricalInput <: AbstractInputNodeInfo #-------------------- NEW-NOISY --------------------
+    name::String
+end
+
+
+Base.@kwdef mutable struct ModelComparisonInput <: AbstractInputNodeInfo #-------------------- META-HGF --------------------
     name::String
 end
 
@@ -296,8 +307,8 @@ Base.@kwdef mutable struct BinaryStateNodeEdges
         Vector{ContinuousStateNode}()
 
     #Possible children types
-    category_children::Vector{<:AbstractCategoricalStateNode} =
-        Vector{CategoricalStateNode}()
+    category_children::Vector{Union{<:AbstractCategoricalStateNode, <:AbstractNoisyCategoricalStateNode}} = #-------------------- NEW-NOISY --------------------
+        Vector{Union{CategoricalStateNode, NoisyCategoricalStateNode}}()
     observation_children::Vector{<:AbstractBinaryInputNode} = Vector{BinaryInputNode}()
 end
 
@@ -476,8 +487,96 @@ Base.@kwdef mutable struct CategoricalInputNode <: AbstractCategoricalInputNode
     families::Set{String} = Set()
 end
 
+##############################################
+######## Noisy Categorical State Node ######## ---------------------- NEW-NOISY ----------------------
+##############################################
+
+Base.@kwdef mutable struct NoisyCategoricalStateNodeEdges
+    #Possible parents
+    category_parents::Vector{<:AbstractBinaryStateNode} = Vector{BinaryStateNode}()
+    #The order of the category parents
+    category_parent_order::Vector{String} = []
+
+    #Possible children
+    observation_children::Vector{<:AbstractNoisyCategoricalInputNode} =
+        Vector{NoisyCategoricalInputNode}()
+end
+
+Base.@kwdef mutable struct NoisyCategoricalStateNodeParameters
+    coupling_strengths::Dict{String,Real} = Dict{String,Real}()
+end
+
+"""
+Configuration of states in categorical state node
+"""
+Base.@kwdef mutable struct NoisyCategoricalStateNodeState
+    posterior::Vector{Union{T, Missing}} where T <: Real = Union{Real, Missing}[]
+    value_prediction_error::Vector{Union{Real,Missing}} = []
+    prediction::Vector{Union{Real,Missing}} = []
+    parent_predictions::Vector{Union{Real,Missing}} = []
+end
+
+"""
+Configuration of history in categorical state node
+"""
+Base.@kwdef mutable struct NoisyCategoricalStateNodeHistory
+    posterior::Vector{Vector{Union{Real,Missing}}} = []
+    value_prediction_error::Vector{Vector{Union{Real,Missing}}} = []
+    prediction::Vector{Vector{Union{Real,Missing}}} = []
+    parent_predictions::Vector{Vector{Union{Real,Missing}}} = []
+end
+
+"""
+Configuration of edges in categorical state node
+"""
+Base.@kwdef mutable struct NoisyCategoricalStateNode <: AbstractNoisyCategoricalStateNode
+    name::String
+    edges::NoisyCategoricalStateNodeEdges = NoisyCategoricalStateNodeEdges()
+    parameters::NoisyCategoricalStateNodeParameters = NoisyCategoricalStateNodeParameters()
+    states::NoisyCategoricalStateNodeState = NoisyCategoricalStateNodeState()
+    history::NoisyCategoricalStateNodeHistory = NoisyCategoricalStateNodeHistory()
+    update_type::HGFUpdateType = ClassicUpdate()
+end
+
+##############################################
+######## Noisy Categorical Input Node ######## ---------------------- NEW-NOISY ----------------------
+##############################################
+
+Base.@kwdef mutable struct NoisyCategoricalInputNodeEdges
+    observation_parents::Vector{<:AbstractNoisyCategoricalStateNode} =
+        Vector{NoisyCategoricalStateNode}()
+end
+
+Base.@kwdef mutable struct NoisyCategoricalInputNodeParameters
+    coupling_strengths::Dict{String,Real} = Dict{String,Real}()
+end
+
+"""
+Configuration of states of categorical input node
+"""
+Base.@kwdef mutable struct NoisyCategoricalInputNodeState
+    input_value::Vector{Union{Missing, Real}} = Vector{Union{Missing, Real}}([missing])
+end
+
+"""
+History of categorical input node
+"""
+Base.@kwdef mutable struct NoisyCategoricalInputNodeHistory
+    input_value::Vector{Vector{Union{Missing, Real}}} = [Vector{Union{Missing, Real}}([missing])]
+end
+
+"""
+"""
+Base.@kwdef mutable struct NoisyCategoricalInputNode <: AbstractNoisyCategoricalInputNode
+    name::String
+    edges::NoisyCategoricalInputNodeEdges = NoisyCategoricalInputNodeEdges()
+    parameters::NoisyCategoricalInputNodeParameters = NoisyCategoricalInputNodeParameters()
+    states::NoisyCategoricalInputNodeState = NoisyCategoricalInputNodeState()
+    history::NoisyCategoricalInputNodeHistory = NoisyCategoricalInputNodeHistory()
+end
+
 ###########################################
-######## Model Comparison Node ############
+######## Model Comparison Node ############ ---------------------- META-HGF ----------------------
 ###########################################
 
 # Define the edges for the model comparison node

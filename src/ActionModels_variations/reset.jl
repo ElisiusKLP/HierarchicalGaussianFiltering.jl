@@ -91,3 +91,20 @@ function reset_state!(node::CategoricalInputNode)
 
     return nothing
 end
+
+function reset_state!(node::NoisyCategoricalStateNode) #----------------- NEW_NOISY -----------------
+
+    node.states.posterior .= [missing]
+    node.states.value_prediction_error .= missing
+    node.states.prediction .= [1/length(node.states.prediction)]
+    node.states.parent_predictions .= [1/length(node.states.parent_predictions)]
+
+    return nothing
+end
+
+function reset_state!(node::NoisyCategoricalInputNode) #----------------- NEW_NOISY -----------------
+
+    node.states.input_value = [missing]
+
+    return nothing
+end

@@ -14,10 +14,10 @@ export ParameterGroup
 export EnhancedUpdate, ClassicUpdate
 export NodeDefaults
 export ContinuousState,
-    ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput, ModelComparisonInput #MOD
+    ContinuousInput, BinaryState, BinaryInput, CategoricalState, CategoricalInput, NoisyCategoricalState, NoisyCategoricalInput, ModelComparisonInput #-------------------- NEW-NOISY / META-HGF --------------------
 export DriftCoupling,
     ObservationCoupling,
-    WeightedObservationCoupling, #MODIFICATION
+    WeightedObservationCoupling, #-------------------- META-HGF --------------------
     CategoryCoupling,
     ProbabilityCoupling,
     VolatilityCoupling,
@@ -57,6 +57,8 @@ include("update_hgf/node_updates/binary_state_node.jl")
 include("update_hgf/node_updates/categorical_input_node.jl")
 include("update_hgf/node_updates/categorical_state_node.jl")
 include("update_hgf/node_updates/model_comparison_node.jl")
+include("update_hgf/node_updates/noisy_categorical_input_node.jl") #-------------------- NEW-NOISY --------------------
+include("update_hgf/node_updates/noisy_categorical_state_node.jl") #-------------------- NEW-NOISY --------------------
 
 #Functions for creating HGFs
 include("create_hgf/check_hgf.jl")
@@ -76,6 +78,7 @@ include("premade_models/premade_hgfs/premade_categorical_3level.jl")
 include("premade_models/premade_hgfs/premade_categorical_transitions_3level.jl")
 include("premade_models/premade_hgfs/premade_continuous_2level.jl")
 include("premade_models/premade_hgfs/premade_JGET.jl")
+include("premade_models/premade_hgfs/premade_noisy_categorical.jl") #-------------------- NEW-NOISY --------------------
 
 #Utility functions for HGFs
 include("utils/get_prediction.jl")

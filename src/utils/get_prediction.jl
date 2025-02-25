@@ -95,6 +95,22 @@ function get_prediction(node::CategoricalStateNode, stepsize::Real = 1)
     return new_states
 end
 
+function get_prediction(node::NoisyCategoricalStateNode, stepsize::Real = 1) #-----------------NEW-NOISY-----------------
+
+    #Save old states
+    old_states = (; prediction = node.states.prediction)
+    
+    #Update prediction mean
+    node.states.prediction = calculate_prediction(node)[1]
+
+    #Save new states
+    new_states = (; prediction = node.states.prediction)
+
+    #Change states back to the old states
+    node.states.prediction = old_states.prediction
+
+    return new_states
+end
 
 function get_prediction(node::ContinuousInputNode, stepsize::Real = 1)
 

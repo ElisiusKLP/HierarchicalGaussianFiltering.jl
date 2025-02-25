@@ -20,6 +20,13 @@ function update_node_prediction!(node::ContinuousStateNode, stepsize::Real)
     return nothing
 end
 
+# Super getter function ####
+function get_node_prediction!(node::ContinuousStateNode, stepsize::Real, weighted_obs_override::Union{Nothing,Real}=nothing)
+    pred_mean = calculate_prediction_mean(node, stepsize)
+    pred_precision, effective_pred_precision = calculate_prediction_precision(node, stepsize, weighted_obs_override=weighted_obs_override)
+    return (pred_mean, pred_precision, effective_pred_precision)
+end
+
 ##### Mean update #####
 @doc raw"""
     calculate_prediction_mean(node::AbstractNode)
@@ -75,7 +82,7 @@ Calculates a node's prediction precision.
 Uses the equation
 `` \hat{\pi}_i^ =  ``
 """
-function calculate_prediction_precision(node::ContinuousStateNode, stepsize::Real)
+function calculate_prediction_precision(node::ContinuousStateNode, stepsize::Real, weighted_obs_override::Union{Nothing,Real}=nothing)
     #Extract volatility parents
     volatility_parents = node.edges.volatility_parents
 
@@ -146,6 +153,16 @@ function update_node_posterior!(node::ContinuousStateNode, update_type::Enhanced
 
     return nothing
 end
+
+"""
+Get node posterior
+"""
+function get_node_posterior(node::ContinuousStateNode, update_type::EnhancedUpdate, weighted_obs_override::Union{Nothing,Real}=nothing)
+    # get posterior mean
+
+    # get posterior precision
+    
+    return posterior_mean, posterior_precision
 
 ##### Precision update #####
 @doc raw"""

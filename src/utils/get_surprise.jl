@@ -75,7 +75,7 @@ function get_surprise(node::ContinuousInputNode)
     #Get the surprise
     -log(
         pdf(
-            Normal(parents_prediction_mean, node.states. prediction_precision),
+            Normal(parents_prediction_mean, node.states.prediction_precision),
             node.states.input_value,
         ),
     )

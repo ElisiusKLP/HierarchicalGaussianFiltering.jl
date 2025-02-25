@@ -35,6 +35,14 @@ function init_node(node_info::CategoricalInput)
     CategoricalInputNode(name = node_info.name)
 end
 
+function init_node(node_info::NoisyCategoricalState) #-------------------- NEW-NOISY --------------------
+    NoisyCategoricalStateNode(name = node_info.name)
+end
+
+function init_node(node_info::NoisyCategoricalInput) #-------------------- NEW-NOISY --------------------
+    NoisyCategoricalInputNode(name = node_info.name)
+end
+
 function init_node(node_info::ModelComparisonInput)
     ModelComparisonNode(name = node_info.name)
 end
